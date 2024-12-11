@@ -4,7 +4,12 @@ import com.example.boardCRUD.dto.BoardDTO;
 import com.example.boardCRUD.entity.BoardEntity;
 import com.example.boardCRUD.mapper.BoardMapper;
 import com.example.boardCRUD.repository.BoardRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,5 +58,35 @@ public class BoardService {
             return boardMapper.toDto(boardEntity);
         }
         return null;
+    }
+
+    public BoardDTO update(BoardDTO boardDTO) {
+        // 기존 Entity 조회
+        BoardEntity existingBoard = boardRepository.findById(boardDTO.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Board not found"));
+
+        // Title, Contents 필드만 수정
+        existingBoard.setBoardTitle(boardDTO.getBoardTitle());
+        existingBoard.setBoardContents(boardDTO.getBoardContents());
+
+        // 수정된 Entity 저장
+        boardRepository.save(existingBoard);
+
+        return boardMapper.toDto(existingBoard);
+    }
+
+    public void delete(Long id) {
+        boardRepository.deleteById(id);
+    }
+
+    public Page<BoardDTO> paging(Pageable pageable) {
+        int page = pageable.getPageNumber() - 1;
+        int pageLimit = 5;
+        Page<BoardEntity> boardEntities =
+                boardRepository.findAll(PageRequest.of(page, pageLimit, Sort.by(Sort.Direction.ASC, "id")));
+
+        Page<BoardDTO> boardDTOS = boardEntities.map(board -> new BoardDTO(board.getId(), board.getBoardWriter(), board.getBoardTitle(), board.getBoardHits(), board.getCreatedTime()));
+
+        return boardDTOS;
     }
 }
