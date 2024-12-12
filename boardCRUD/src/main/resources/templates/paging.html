@@ -1,57 +1,91 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-  <meta charset="UTF-8">
-  <title>Title</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board List</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f3e7e9, #e3eeff);
+            font-family: 'Arial', sans-serif;
+            padding: 20px;
+        }
+        .board-container {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            max-width: 1200px;
+            margin: auto;
+        }
+        .board-container h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #6c63ff;
+        }
+        .btn-primary {
+            background-color: #6c63ff;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #5548c8;
+        }
+        .pagination a {
+            margin: 0 5px;
+            text-decoration: none;
+        }
+        .pagination span {
+            margin: 0 5px;
+        }
+    </style>
 </head>
 <body>
-<button onclick="saveReq()">글작성</button>
+<div class="board-container">
+    <h2>Board List</h2>
+    <button class="btn btn-primary mb-3" onclick="saveReq()">Create Post</button>
+    <table class="table table-striped table-bordered">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Writer</th>
+            <th>Date</th>
+            <th>Hits</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="board: ${boardList}">
+            <td th:text="${board.id}"></td>
+            <td><a th:href="@{|/board/${board.id}|(page=${boardList.number + 1})}" th:text="${board.boardTitle}"></a></td>
+            <td th:text="${board.boardWriter}"></td>
+            <td th:text="*{#temporals.format(board.boardCreatedTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
+            <td th:text="${board.boardHits}"></td>
+        </tr>
+        </tbody>
+    </table>
 
-<table>
-  <tr>
-    <th>id</th>
-    <th>title</th>
-    <th>writer</th>
-    <th>date</th>
-    <th>hits</th>
-  </tr>
-  <tr th:each="board: ${boardList}">
-    <td th:text="${board.id}"></td>
-    <td><a th:href="@{|/board/${board.id}|(page=${boardList.number + 1})}" th:text="${board.boardTitle}"></a></td>
-    <td th:text="${board.boardWriter}"></td>
-    <td th:text="*{#temporals.format(board.boardCreatedTime, 'yyyy-MM-dd HH:mm:ss')}"></td>
-    <td th:text="${board.boardHits}"></td>
-  </tr>
-</table>
-<!-- 첫번째 페이지로 이동 -->
-<!-- /board/paging?page=1 -->
-<a th:href="@{/board/paging(page=1)}">First</a>
-<!-- 이전 링크 활성화 비활성화 -->
-<!-- boardList.getNumber() 사용자:2페이지 getNumber()=1 -->
-<a th:href="${boardList.first} ? '#' : @{/board/paging(page=${boardList.number})}">prev</a>
+    <div class="pagination d-flex justify-content-center mt-3">
+        <a class="btn btn-outline-secondary btn-sm" th:href="@{/board/paging(page=1)}">First</a>
+        <a class="btn btn-outline-secondary btn-sm" th:href="${boardList.first} ? '#' : @{/board/paging(page=${boardList.number})}">Prev</a>
 
-<!-- 페이지 번호 링크(현재 페이지는 숫자만)
-        for(int page=startPage; page<=endPage; page++)-->
-<span th:each="page: ${#numbers.sequence(startPage, endPage)}">
-<!-- 현재페이지는 링크 없이 숫자만 -->
-    <span th:if="${page == boardList.number + 1}" th:text="${page}"></span>
-  <!-- 현재페이지 번호가 아닌 다른 페이지번호에는 링크를 보여줌 -->
-    <span th:unless="${page == boardList.number + 1}">
-        <a th:href="@{/board/paging(page=${page})}" th:text="${page}"></a>
+        <span th:each="page: ${#numbers.sequence(startPage, endPage)}">
+      <span th:if="${page == boardList.number + 1}" class="btn btn-primary btn-sm disabled" th:text="${page}"></span>
+      <a th:unless="${page == boardList.number + 1}" class="btn btn-outline-primary btn-sm" th:href="@{/board/paging(page=${page})}" th:text="${page}"></a>
     </span>
-</span>
 
-<!-- 다음 링크 활성화 비활성화
-    사용자: 2페이지, getNumber: 1, 3페이지-->
-<a th:href="${boardList.last} ? '#' : @{/board/paging(page=${boardList.number + 2})}">next</a>
-<!-- 마지막 페이지로 이동 -->
-<a th:href="@{/board/paging(page=${boardList.totalPages})}">Last</a>
+        <a class="btn btn-outline-secondary btn-sm" th:href="${boardList.last} ? '#' : @{/board/paging(page=${boardList.number + 2})}">Next</a>
+        <a class="btn btn-outline-secondary btn-sm" th:href="@{/board/paging(page=${boardList.totalPages})}">Last</a>
+    </div>
+</div>
 
-</body>
+<!-- Bootstrap JS (optional) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  const saveReq = () => {
-    location.href = "/board/save";
-  }
-
+    const saveReq = () => {
+        location.href = "/board/save";
+    }
 </script>
+</body>
 </html>

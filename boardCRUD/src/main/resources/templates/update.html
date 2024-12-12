@@ -2,18 +2,66 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="UTF-8">
-  <title>update</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Board</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #74ebd5, #9face6);
+      font-family: 'Arial', sans-serif;
+      padding: 20px;
+    }
+    .form-container {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: auto;
+    }
+    .form-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #6c63ff;
+    }
+    .btn-primary {
+      background-color: #6c63ff;
+      border: none;
+    }
+    .btn-primary:hover {
+      background-color: #5548c8;
+    }
+  </style>
 </head>
 <body>
-<form action="/board/update" method="post" name="updateForm">
-  <input type="hidden" name="id" th:value="${boardUpdate.id}">
-  writer: <input type="text" name="boardWriter" th:value="${boardUpdate.boardWriter}" readonly> <br>
-  pass: <input type="text" name="boardPass" id="boardPass"> <br>
-  title: <input type="text" name="boardTitle" th:value="${boardUpdate.boardTitle}"> <br>
-  contents: <textarea name="boardContents" cols="30" rows="10" th:text="${boardUpdate.boardContents}"></textarea> <br>
-  <input type="hidden" name="boardHits" th:value="${boardUpdate.boardHits}">
-  <input type="button" value="글수정" onclick="boardUpdate()">
-</form>
+<div class="form-container">
+  <h2>Update Board</h2>
+  <form action="/board/update" method="post" name="updateForm">
+    <input type="hidden" name="id" th:value="${boardUpdate.id}">
+    <div class="mb-3">
+      <label for="boardWriter" class="form-label">Writer</label>
+      <input type="text" class="form-control" id="boardWriter" name="boardWriter" th:value="${boardUpdate.boardWriter}" readonly>
+    </div>
+    <div class="mb-3">
+      <label for="boardPass" class="form-label">Password</label>
+      <input type="text" class="form-control" id="boardPass" name="boardPass">
+    </div>
+    <div class="mb-3">
+      <label for="boardTitle" class="form-label">Title</label>
+      <input type="text" class="form-control" id="boardTitle" name="boardTitle" th:value="${boardUpdate.boardTitle}">
+    </div>
+    <div class="mb-3">
+      <label for="boardContents" class="form-label">Contents</label>
+      <textarea class="form-control" id="boardContents" name="boardContents" rows="5" th:text="${boardUpdate.boardContents}"></textarea>
+    </div>
+    <input type="hidden" name="boardHits" th:value="${boardUpdate.boardHits}">
+    <button type="button" class="btn btn-primary w-100" onclick="boardUpdate()">Update</button>
+  </form>
+</div>
+
+<!-- Bootstrap JS (optional) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script th:inline="javascript">
   const boardUpdate = () => {
     const pass = [[${boardUpdate.boardPass}]];
@@ -21,8 +69,9 @@
     if (pass == inputPass) {
       document.updateForm.submit();
     } else {
-      alert("비밀번호가 일치하지 않습니다!");
+      alert("Password does not match!");
     }
   }
 </script>
 </body>
+</html>

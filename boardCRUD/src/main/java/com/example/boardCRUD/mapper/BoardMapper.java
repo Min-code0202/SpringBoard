@@ -11,5 +11,6 @@ public interface BoardMapper {
     @Mapping(source = "updatedTime", target = "boardUpdatedTime")
     BoardDTO toDto(BoardEntity boardEntity);
     @Mapping(target="boardHits", expression = "java(0)")
+    @Mapping(target="fileAttached", expression = "java(0)")
     BoardEntity toEntity(BoardDTO boardDTO);
 }
