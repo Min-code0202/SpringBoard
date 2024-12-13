@@ -32,6 +32,12 @@
         .btn-primary:hover {
             background-color: #5548c8;
         }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -63,6 +69,12 @@
             <th>Contents</th>
             <td th:text="${board.boardContents}"></td>
         </tr>
+        <tr th:if="${board.fileAttached == 1}">
+            <th>Attachment</th>
+            <td>
+                <img th:src="@{|/upload/${board.storedFileName}|}" alt="Uploaded Image">
+            </td>
+        </tr>
         </tbody>
     </table>
     <div class="d-flex justify-content-between">
@@ -79,11 +91,11 @@
         location.href = "/board/";
     }
     const updateReq = () => {
-        const id = [[${board.id}]];
+        const id = /*[[${board.id}]]*/ 'defaultId';
         location.href = "/board/update/" + id;
     }
     const deleteReq = () => {
-        const id = [[${board.id}]];
+        const id = /*[[${board.id}]]*/ 'defaultId';
         location.href = "/board/delete/" + id;
     }
 </script>

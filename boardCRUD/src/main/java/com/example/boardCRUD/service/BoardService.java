@@ -2,7 +2,9 @@ package com.example.boardCRUD.service;
 
 import com.example.boardCRUD.dto.BoardDTO;
 import com.example.boardCRUD.entity.BoardEntity;
+import com.example.boardCRUD.entity.BoardFileEntity;
 import com.example.boardCRUD.mapper.BoardMapper;
+import com.example.boardCRUD.repository.BoardFileRepository;
 import com.example.boardCRUD.repository.BoardRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -26,21 +28,32 @@ import java.util.stream.Collectors;
 public class BoardService {
     private final BoardRepository boardRepository;
     private final BoardMapper boardMapper;
+    private final BoardFileRepository boardFileRepository;
 
     public void save(BoardDTO boardDTO) throws IOException {
+        BoardEntity boardEntity = boardMapper.toEntity(boardDTO);
         if(boardDTO.getBoardFile().isEmpty()){
             // 첨부 파일 없음
-            BoardEntity boardEntity = boardMapper.toEntity(boardDTO);
+            boardEntity.setFileAttached(0);
             boardRepository.save(boardEntity);
         }else{
             // 첨부 파일 있음
             MultipartFile boardFile = boardDTO.getBoardFile();
             String originalFileName = boardFile.getOriginalFilename();
             String storedFileName = System.currentTimeMillis() + "_" + originalFileName;
-            String savePath = "C:\\Users\\jjm00\\Desktop\\개발\\Temp" + storedFileName;
-            boardFile.transferTo(new File(savePath));
-        }
 
+            // 저장 경로 생성
+            String savePath = "C:\\Users\\jjm00\\Desktop\\개발\\Temp\\" + storedFileName;
+            boardFile.transferTo(new File(savePath));
+
+            // BoardEntity 저장
+            boardEntity.setFileAttached(1);
+            BoardEntity savedBoardEntity = boardRepository.save(boardEntity);
+
+            // BoardFileEntity 생성 및 저장
+            BoardFileEntity boardFileEntity = BoardFileEntity.toBoardFileEntity(savedBoardEntity, originalFileName, storedFileName);
+            boardFileRepository.save(boardFileEntity);
+        }
     }
 
     public List<BoardDTO> findAll() {
@@ -65,14 +78,27 @@ public class BoardService {
         boardRepository.updateHits(id);
     }
 
+    @Transactional
     public BoardDTO findById(Long id) {
-        Optional<BoardEntity> boardEntityOptional = boardRepository.findById(id);
-        if (boardEntityOptional.isPresent()) {
-            BoardEntity boardEntity = boardEntityOptional.get();
-            return boardMapper.toDto(boardEntity);
+        Optional<BoardEntity> optionalBoardEntity = boardRepository.findById(id);
+        if (optionalBoardEntity.isPresent()) {
+            BoardEntity boardEntity = optionalBoardEntity.get();
+
+            // MapStruct로 기본 변환
+            BoardDTO boardDTO = boardMapper.toDto(boardEntity);
+
+            // 추가 데이터 설정
+            if (boardEntity.getFileAttached() == 1) {
+                // 파일이 첨부된 경우, 파일 정보를 수동으로 DTO에 설정
+                BoardFileEntity fileEntity = boardEntity.getBoardFileEntity();
+                boardDTO.setOriginalFileName(fileEntity.getOriginalFileName());
+                boardDTO.setStoredFileName(fileEntity.getStoredFileName());
+            }
+            return boardDTO;
         }
         return null;
     }
+
 
     public BoardDTO update(BoardDTO boardDTO) {
         // 기존 Entity 조회

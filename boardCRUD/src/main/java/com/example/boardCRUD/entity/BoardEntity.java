@@ -34,6 +34,6 @@ public class BoardEntity extends BaseEntity {
     @Column
     private int fileAttached;
 
-    @OneToMany(mappedBy = "boardEntity", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<BoardFileEntity> boardFileEntityList = new ArrayList<>();
+    @OneToOne(mappedBy = "boardEntity", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
+    private BoardFileEntity boardFileEntity;
 }
