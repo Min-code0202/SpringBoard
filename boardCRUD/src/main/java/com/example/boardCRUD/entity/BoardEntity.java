@@ -34,6 +34,12 @@ public class BoardEntity extends BaseEntity {
     @Column
     private int fileAttached;
 
+    @Column
+    private int youtubeAttached;
+
+    @Column
+    private String youtubeLink;
+
     @OneToOne(mappedBy = "boardEntity", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.LAZY)
     private BoardFileEntity boardFileEntity;
 

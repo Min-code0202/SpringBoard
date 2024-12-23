@@ -31,12 +31,23 @@ public class BoardService {
     private final BoardFileRepository boardFileRepository;
 
     public void save(BoardDTO boardDTO) throws IOException {
+        /*
+         * boardHits, fileAttached, youtubeAttached 필드는
+         * 0으로 초기화된 상태로 매핑됨
+         * */
         BoardEntity boardEntity = boardMapper.toEntity(boardDTO);
+
+        // 유튜브 링크 처리
+        if (boardDTO.getYoutubeLink() != null && !boardDTO.getYoutubeLink().isEmpty()){
+            boardEntity.setYoutubeLink(convertToEmbedYoutubeLink(boardDTO.getYoutubeLink()));
+            boardEntity.setYoutubeAttached(1);
+        }
+
+        // 첨부 파일 처리
         if(boardDTO.getBoardFile().isEmpty()){
-            // 첨부 파일 없음
-            boardEntity.setFileAttached(0);
+            // 첨부파일 없음
             boardRepository.save(boardEntity);
-        }else{
+        }else {
             // 첨부 파일 있음
             MultipartFile boardFile = boardDTO.getBoardFile();
             String originalFileName = boardFile.getOriginalFilename();
@@ -46,14 +57,22 @@ public class BoardService {
             String savePath = "C:\\Users\\jjm00\\Desktop\\개발\\Temp\\" + storedFileName;
             boardFile.transferTo(new File(savePath));
 
-            // BoardEntity 저장
+            // 첨부 파일 관련 정보 설정
             boardEntity.setFileAttached(1);
             BoardEntity savedBoardEntity = boardRepository.save(boardEntity);
 
             // BoardFileEntity 생성 및 저장
             BoardFileEntity boardFileEntity = BoardFileEntity.toBoardFileEntity(savedBoardEntity, originalFileName, storedFileName);
-            boardFileRepository.save(boardFileEntity);
+            boardFileRepository.save(boardFileEntity); // boardEntity와 연결된 파일을 저장
         }
+    }
+
+    public String convertToEmbedYoutubeLink(String youtubeLink) {
+        if (youtubeLink != null && !youtubeLink.isEmpty()) {
+            String videoId = youtubeLink.split("v=")[1].split("&")[0]; // 'v=' 뒤의 videoId 추출
+            return "https://www.youtube.com/embed/" + videoId; // 임베드 URL 생성
+        }
+        return null; // 링크가 없으면 null 반환
     }
 
     public List<BoardDTO> findAll() {
@@ -70,7 +89,6 @@ public class BoardService {
                 .map(boardMapper::toDto)
                 .collect(Collectors.toList());
          */
-
     }
 
     @Transactional
@@ -105,10 +123,11 @@ public class BoardService {
         BoardEntity existingBoard = boardRepository.findById(boardDTO.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Board not found"));
 
-        // Title, Contents, fileAttached 필드만 수정
+        // Title, Contents, fileAttached, youtubeAttached 필드만 수정
         existingBoard.setBoardTitle(boardDTO.getBoardTitle());
         existingBoard.setBoardContents(boardDTO.getBoardContents());
         existingBoard.setFileAttached(boardDTO.getFileAttached());
+        existingBoard.setYoutubeAttached(boardDTO.getYoutubeAttached());
 
         // 수정된 Entity 저장
         boardRepository.save(existingBoard);
